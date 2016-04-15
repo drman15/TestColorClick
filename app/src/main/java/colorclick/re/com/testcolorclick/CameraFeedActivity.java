@@ -1,12 +1,15 @@
 package colorclick.re.com.testcolorclick;
 
 import android.annotation.SuppressLint;
+import android.hardware.Camera;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.os.Handler;
+import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
+import android.widget.FrameLayout;
 
 /**
  * An example full-screen activity that shows and hides the system UI (i.e.
@@ -35,25 +38,40 @@ public class CameraFeedActivity extends AppCompatActivity {
     private View mControlsView;
     private boolean mVisible;
 
+    private Camera mCamera = null;
+    private CameraView mCameraView = null;
+
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.activity_camera_feed);
 
+        try{
+            mCamera = Camera.open();//you can use open(int) to use different cameras
+        } catch (Exception e){
+            Log.d("ERROR", "Failed to get camera: " + e.getMessage());
+        }
+
+        if(mCamera != null) {
+            mCameraView = new CameraView(this, mCamera);//create a SurfaceView to show camera data
+            FrameLayout camera_view = (FrameLayout)findViewById(R.id.camera_view);
+            camera_view.addView(mCameraView);//add the SurfaceView to the layout
+        }
+
         mVisible = true;
         mControlsView = findViewById(R.id.fullscreen_content_controls);
-        mContentView = findViewById(R.id.fullscreen_content);
+        //mContentView = findViewById(R.id.fullscreen_content);
 
 
         // Set up the user interaction to manually show or hide the system UI.
-        mContentView.setOnClickListener(new View.OnClickListener() {
+/*        mContentView.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
                 toggle();
             }
         });
-
+*/
         // Upon interacting with UI controls, delay any scheduled hide()
         // operations to prevent the jarring behavior of controls going away
         // while interacting with the UI.
@@ -116,12 +134,12 @@ public class CameraFeedActivity extends AppCompatActivity {
             // Note that some of these constants are new as of API 16 (Jelly Bean)
             // and API 19 (KitKat). It is safe to use them, as they are inlined
             // at compile-time and do nothing on earlier devices.
-            mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
+       /*     mContentView.setSystemUiVisibility(View.SYSTEM_UI_FLAG_LOW_PROFILE
                     | View.SYSTEM_UI_FLAG_FULLSCREEN
                     | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
                     | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY
                     | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION
-                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);
+                    | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION);*/
         }
     };
 
