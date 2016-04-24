@@ -10,14 +10,20 @@ import java.util.Date;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Canvas;
+import android.graphics.Color;
+import android.graphics.drawable.BitmapDrawable;
 import android.hardware.Camera;
 import android.hardware.Camera.CameraInfo;
 import android.hardware.Camera.PictureCallback;
 import android.os.Bundle;
+import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.WindowManager;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.Toast;
 
@@ -97,11 +103,39 @@ public class AndroidCameraExample extends Activity {
 		mPreview = new CameraPreview(myContext, mCamera);
 		cameraPreview.addView(mPreview);
 
-		capture = (Button) findViewById(R.id.dummy_button);
+		//FrameLayout frameLayout = (FrameLayout) findViewById(R.id.blah);
+		//frameLayout.setDrawingCacheEnabled(true);
+		//frameLayout.buildDrawingCache();
+		//final Bitmap bitmap = ((BitmapDrawable)mPreview.getDrawable()).getBitmap();
+		//final Bitmap bitmap = frameLayout.getDrawingCache();
+		final Bitmap bitmap = Bitmap.createBitmap(getResources().getDisplayMetrics().widthPixels, getResources().getDisplayMetrics().heightPixels, Bitmap.Config.ARGB_8888);
+		//frameLayout.destroyDrawingCache();
+		Canvas canvas = new Canvas(bitmap);
+		cameraPreview.draw(canvas);
+		cameraPreview.setOnTouchListener(new View.OnTouchListener() {
+			@Override
+			public boolean onTouch(View v, MotionEvent event) {
+
+				int x = (int) event.getX();
+				int y = (int) event.getY();
+				int pixel = bitmap.getPixel(x, y);
+
+				//then do what you want with the pixel data, e.g
+				int redValue = Color.red(pixel);
+				int blueValue = Color.blue(pixel);
+				int greenValue = Color.green(pixel);
+				Toast toast = Toast.makeText(myContext, "red value = " + redValue, Toast.LENGTH_SHORT);
+				//Toast toast = Toast.makeText(myContext, "hi ", Toast.LENGTH_LONG);
+				toast.show();
+				return false;
+			}
+		});
+
+	/*	capture = (Button) findViewById(R.id.dummy_button);
 		capture.setOnClickListener(captrureListener);
 
 		switchCamera = (Button) findViewById(R.id.dummy_button);
-		switchCamera.setOnClickListener(switchCameraListener);
+		switchCamera.setOnClickListener(switchCameraListener); */
 	}
 
 	OnClickListener switchCameraListener = new OnClickListener() {
