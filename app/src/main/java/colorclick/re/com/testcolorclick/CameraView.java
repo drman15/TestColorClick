@@ -19,7 +19,6 @@ package colorclick.re.com.testcolorclick;
 import android.app.Activity;
 import android.content.Context;
 import android.content.pm.PackageManager;
-import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.hardware.Camera;
 import android.os.Bundle;
@@ -71,8 +70,6 @@ public class CameraView extends Activity {
                 int g = Color.green(pixel);
                 int b = Color.blue(pixel);
 
-                //Toast toast = Toast.makeText(getBaseContext(), colorDictionary.getColorNameFromRgb(r, g, b) + ", " + r + ", " + g + ", " + b, Toast.LENGTH_SHORT);
-                //toast.show();
                 TextView textView = (TextView) findViewById(R.id.color_textview);
                 textView.setText(colorDictionary.getColorNameFromRgb(r, g, b) + ", " + r + ", " + g + ", " + b);
 
@@ -114,7 +111,6 @@ public class CameraView extends Activity {
                 Camera.Parameters p = mPreview.mCamera.getParameters();
                 p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
                 mPreview.mCamera.setParameters(p);
-                //mPreview.mCamera.startPreview();
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -130,9 +126,6 @@ public class CameraView extends Activity {
                 Camera.Parameters p = mPreview.mCamera.getParameters();
                 p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
                 mPreview.mCamera.setParameters(p);
-                //mPreview.mCamera.stopPreview();
-                //mPreview.mCamera.release();
-                //mPreview.mCamera = null;
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -261,6 +254,8 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.Prev
             pixels = new int[previewSize.width * previewSize.height];
 
         } catch (IOException exception) {
+            mCamera.setPreviewCallback(null);
+            getHolder().removeCallback(this);
             mCamera.release();
             mCamera = null;
             // TODO: add more exception handling logic here
@@ -298,6 +293,8 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.Prev
         //our app has only one screen, so we'll destroy the camera in the surface
         //if you are unsing with more screens, please move this code your activity
         mCamera.stopPreview();
+        mCamera.setPreviewCallback(null);
+        getHolder().removeCallback(this);
         mCamera.release();
     }
 
