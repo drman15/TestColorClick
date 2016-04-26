@@ -16,28 +16,28 @@ package colorclick.re.com.testcolorclick;
  * limitations under the License.
  */
 
-        import android.app.Activity;
-        import android.content.Context;
-        import android.content.pm.PackageManager;
-        import android.graphics.Bitmap;
-        import android.graphics.Color;
-        import android.hardware.Camera;
-        import android.os.Bundle;
-        import android.util.Log;
-        import android.view.MotionEvent;
-        import android.view.SurfaceHolder;
-        import android.view.SurfaceView;
-        import android.view.View;
-        import android.view.Window;
-        import android.widget.Button;
-        import android.widget.FrameLayout;
-        import android.widget.ImageView;
-        import android.widget.RelativeLayout;
-        import android.widget.TextView;
-        import android.widget.Toast;
+import android.app.Activity;
+import android.content.Context;
+import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.Color;
+import android.hardware.Camera;
+import android.os.Bundle;
+import android.util.Log;
+import android.view.MotionEvent;
+import android.view.SurfaceHolder;
+import android.view.SurfaceView;
+import android.view.View;
+import android.view.Window;
+import android.widget.Button;
+import android.widget.FrameLayout;
+import android.widget.ImageView;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
+import android.widget.Toast;
 
-        import java.io.IOException;
-        import java.util.List;
+import java.io.IOException;
+import java.util.List;
 
 // ----------------------------------------------------------------------
 
@@ -198,11 +198,20 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.Prev
         if (newDist > mDist) {
             //zoom in
             if (zoom < maxZoom)
+            {
                 zoom = zoom + maxZoom / 10;
+
+                //clip to maxzoom after incrementing
+                zoom = zoom > maxZoom ? maxZoom : zoom;
+            }
         } else if (newDist < mDist) {
             //zoom out
-            if (zoom > 0)
+            if (zoom > 0) {
                 zoom = zoom - maxZoom / 10;
+
+                //clip to zero after decrementing
+                zoom = zoom < 0 ? 0 : zoom;
+            }
         }
         mDist = newDist;
         params.setZoom(zoom);
