@@ -18,6 +18,7 @@ package colorclick.re.com.testcolorclick;
 
         import android.app.Activity;
         import android.content.Context;
+        import android.content.pm.PackageManager;
         import android.graphics.Bitmap;
         import android.graphics.Color;
         import android.hardware.Camera;
@@ -28,6 +29,11 @@ package colorclick.re.com.testcolorclick;
         import android.view.SurfaceView;
         import android.view.View;
         import android.view.Window;
+        import android.widget.Button;
+        import android.widget.FrameLayout;
+        import android.widget.ImageView;
+        import android.widget.RelativeLayout;
+        import android.widget.TextView;
         import android.widget.Toast;
 
         import java.io.IOException;
@@ -37,7 +43,7 @@ package colorclick.re.com.testcolorclick;
 public class CameraView extends Activity {
     private Preview mPreview;
     private ColorUtils colorDictionary;
-
+    private boolean flashlighton;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -47,6 +53,7 @@ public class CameraView extends Activity {
         requestWindowFeature(Window.FEATURE_NO_TITLE);
 
         colorDictionary = new ColorUtils();
+        flashlighton = false;
 
         // Create our Preview view and set it as the content of our activity.
         mPreview = new Preview(this);
@@ -54,8 +61,8 @@ public class CameraView extends Activity {
             @Override
             public boolean onTouch(View v, MotionEvent event) {
 
-                int x = (int) ( mPreview.getPreviewHeight() * event.getX() / mPreview.getWidth());
-                int y = (int) ( mPreview.getPreviewWidth() * event.getY() / mPreview.getHeight());
+                int x = (int) (mPreview.getPreviewHeight() * event.getX() / mPreview.getWidth());
+                int y = (int) (mPreview.getPreviewWidth() * event.getY() / mPreview.getHeight());
                 int pixel = mPreview.getPixels()[mPreview.getPreviewWidth() * (mPreview.getPreviewHeight() - x) + y];
 
                 //then do what you want with the pixel data, e.g
@@ -63,16 +70,74 @@ public class CameraView extends Activity {
                 int g = Color.green(pixel);
                 int b = Color.blue(pixel);
 
-           /*     Toast toast = Toast.makeText(getBaseContext(), mPreview.getPreviewWidth() + ", " + mPreview.getPreviewHeight() + "; " +
-                        mPreview.getWidth() + ", " + mPreview.getHeight() + "; " +
-                        r + ", " + g + ", " + b, Toast.LENGTH_SHORT); */
-                //Toast toast = Toast.makeText(myContext, "hi ", Toast.LENGTH_LONG);
-                Toast toast = Toast.makeText(getBaseContext(), colorDictionary.getColorNameFromRgb(r, g, b) + ", " + r + ", " + g + ", " + b, Toast.LENGTH_SHORT);
-                toast.show();
+                //Toast toast = Toast.makeText(getBaseContext(), colorDictionary.getColorNameFromRgb(r, g, b) + ", " + r + ", " + g + ", " + b, Toast.LENGTH_SHORT);
+                //toast.show();
+                TextView textView = (TextView) findViewById(R.id.color_textview);
+                textView.setText(colorDictionary.getColorNameFromRgb(r, g, b) + ", " + r + ", " + g + ", " + b);
+
+                ImageView imageView = (ImageView) findViewById(R.id.colorrectimage);
+                imageView.setBackgroundColor(Color.rgb(r, g, b));
+
                 return false;
             }
         });
-        setContentView(mPreview);
+
+        setContentView(R.layout.activity_camera);
+
+        FrameLayout frameLayout = (FrameLayout) findViewById(R.id.camera_preview);
+        frameLayout.addView(mPreview);
+
+        RelativeLayout relativeLayoutSensorsData = (RelativeLayout) findViewById(R.id.color_text);
+        relativeLayoutSensorsData.bringToFront();
+
+        Button button = (Button) findViewById(R.id.flashlight);
+        button.setOnClickListener(new Button.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (flashlighton) {
+                    flashLightOff();
+                    flashlighton = false;
+                } else {
+                    flashLightOn();
+                    flashlighton = true;
+                }
+            }
+        });
+    }
+
+    public void flashLightOn() {
+
+        try {
+            if (getPackageManager().hasSystemFeature(
+                    PackageManager.FEATURE_CAMERA_FLASH)) {
+                Camera.Parameters p = mPreview.mCamera.getParameters();
+                p.setFlashMode(Camera.Parameters.FLASH_MODE_TORCH);
+                mPreview.mCamera.setParameters(p);
+                //mPreview.mCamera.startPreview();
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(getBaseContext(), "Exception flashLightOn()",
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    public void flashLightOff() {
+        try {
+            if (getPackageManager().hasSystemFeature(
+                    PackageManager.FEATURE_CAMERA_FLASH)) {
+                Camera.Parameters p = mPreview.mCamera.getParameters();
+                p.setFlashMode(Camera.Parameters.FLASH_MODE_OFF);
+                mPreview.mCamera.setParameters(p);
+                //mPreview.mCamera.stopPreview();
+                //mPreview.mCamera.release();
+                //mPreview.mCamera = null;
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+            Toast.makeText(getBaseContext(), "Exception flashLightOff",
+                    Toast.LENGTH_SHORT).show();
+        }
     }
 
 }

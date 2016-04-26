@@ -1,21 +1,30 @@
 package colorclick.re.com.testcolorclick;
 
+import android.graphics.Color;
+
 import java.util.ArrayList;
+import java.util.HashMap;
 
 /**
  * Java Code to get a color name from rgb/hex value/awt color
- * 
+ *
  * The part of looking up a color name from the rgb values is edited from
  * https://gist.github.com/nightlark/6482130#file-gistfile1-java (that has some errors) by Ryan Mast (nightlark)
- * 
+ *
  * @author Xiaoxiao Li
- * 
+ *
  */
 public class ColorUtils {
+	private ArrayList<ColorName> colorList;
 
 	/**
 	 * Initialize the color list that we have.
 	 */
+	public ColorUtils() {
+		//initialize dictionary and color list
+		colorList = initSimplestColorList();
+	}
+
 	private ArrayList<ColorName> initColorList() {
 		ArrayList<ColorName> colorList = new ArrayList<ColorName>();
 		colorList.add(new ColorName("Alice Blue", 0xF0, 0xF8, 0xFF));
@@ -250,9 +259,10 @@ public class ColorUtils {
 		colorList.add(new ColorName("Green Yellow", 0xAD, 0xFF, 0x2F));
 		colorList.add(new ColorName("Indigo", 0x48, 0x00, 0xFF));
 		colorList.add(new ColorName("Light Blue", 0xAD, 0xD8, 0xE6));
-		colorList.add(new ColorName("Light Gray", 0xC0, 0xC0, 0xC0));
+		colorList.add(new ColorName("Light Gray", 0xD3, 0xD3, 0xD3));
 		colorList.add(new ColorName("Light Green", 0x90, 0xEE, 0x90));
-		colorList.add(new ColorName("Light Pink", 0xF9, 0xCC, 0xCA));
+		colorList.add(new ColorName("Light Pink", 0xFF, 0xB6, 0xC1));
+		colorList.add(new ColorName("Light Brown", 0xCC, 0x99, 0x66));
 		colorList.add(new ColorName("Magenta", 0xFF, 0x00, 0xFF));
 		colorList.add(new ColorName("Orange", 0xFF, 0xA5, 0x00));
 		colorList.add(new ColorName("Orange Red", 0xFF, 0x45, 0x00));
@@ -265,17 +275,27 @@ public class ColorUtils {
 		colorList.add(new ColorName("Yellow Green", 0xDF, 0xFF, 0x00));
 		return colorList;
 	}
+
 	/**
 	 * Get the closest color name from our list
-	 * 
+	 *
 	 * @param r
 	 * @param g
 	 * @param b
 	 * @return
 	 */
 	public String getColorNameFromRgb(int r, int g, int b) {
-		ArrayList<ColorName> colorList = initSimplestColorList();
 		ColorName closestMatch = null;
+
+		//increase saturation to better represent suggested colors
+		float[] hsv = new float[3];
+		Color.RGBToHSV(r, g, b, hsv);
+		hsv[2] = 1.1F * hsv[2];
+		int color = Color.HSVToColor(hsv);
+		r = Color.red(color);
+		g = Color.green(color);
+		b = Color.blue(color);
+
 		int minMSE = Integer.MAX_VALUE;
 		int mse;
 		for (ColorName c : colorList) {
@@ -295,7 +315,7 @@ public class ColorUtils {
 
 	/**
 	 * Convert hexColor to rgb, then call getColorNameFromRgb(r, g, b)
-	 * 
+	 *
 	 * @param hexColor
 	 * @return
 	 */
@@ -308,9 +328,9 @@ public class ColorUtils {
 
 	/**
 	 * SubClass of ColorUtils. In order to lookup color name
-	 * 
+	 *
 	 * @author Xiaoxiao Li
-	 * 
+	 *
 	 */
 	public class ColorName {
 		public int r, g, b;
