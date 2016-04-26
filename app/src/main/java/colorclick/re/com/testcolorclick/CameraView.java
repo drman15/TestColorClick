@@ -37,6 +37,7 @@ package colorclick.re.com.testcolorclick;
         import android.widget.Toast;
 
         import java.io.IOException;
+        import java.util.List;
 
 // ----------------------------------------------------------------------
 
@@ -147,6 +148,7 @@ public class CameraView extends Activity {
 class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.PreviewCallback {
     SurfaceHolder mHolder;
     Camera mCamera;
+    float mDist;
 
     //This variable is responsible for getting and setting the camera settings
     private Camera.Parameters parameters;
@@ -154,7 +156,6 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.Prev
     private Camera.Size previewSize;
     //this array stores the pixels as hexadecimal pairs
     private int[] pixels;
-
 
     Preview(Context context) {
         super(context);
@@ -164,6 +165,74 @@ class Preview extends SurfaceView implements SurfaceHolder.Callback, Camera.Prev
         mHolder = getHolder();
         mHolder.addCallback(this);
         mHolder.setType(SurfaceHolder.SURFACE_TYPE_PUSH_BUFFERS);
+    }
+
+    @Override
+    public boolean onTouchEvent(MotionEvent event) {
+        // Get the pointer ID
+        Camera.Parameters params = mCamera.getParameters();
+        int action = event.getAction();
+
+
+        if (event.getPointerCount() > 1) {
+            // handle multi-touch events
+            if (action == MotionEvent.ACTION_POINTER_DOWN) {
+                mDist = getFingerSpacing(event);
+            } else if (action == MotionEvent.ACTION_MOVE && params.isZoomSupported()) {
+                mCamera.cancelAutoFocus();
+                handleZoom(event, params);
+            }
+        } else {
+            // handle single touch events
+            if (action == MotionEvent.ACTION_UP) {
+                handleFocus(event, params);
+            }
+        }
+        return true;
+    }
+
+    private void handleZoom(MotionEvent event, Camera.Parameters params) {
+        int maxZoom = params.getMaxZoom();
+        int zoom = params.getZoom();
+        float newDist = getFingerSpacing(event);
+        if (newDist > mDist) {
+            //zoom in
+            if (zoom < maxZoom)
+                zoom = zoom + maxZoom / 10;
+        } else if (newDist < mDist) {
+            //zoom out
+            if (zoom > 0)
+                zoom = zoom - maxZoom / 10;
+        }
+        mDist = newDist;
+        params.setZoom(zoom);
+        mCamera.setParameters(params);
+    }
+
+    public void handleFocus(MotionEvent event, Camera.Parameters params) {
+        int pointerId = event.getPointerId(0);
+        int pointerIndex = event.findPointerIndex(pointerId);
+        // Get the pointer's current position
+        float x = event.getX(pointerIndex);
+        float y = event.getY(pointerIndex);
+
+        List<String> supportedFocusModes = params.getSupportedFocusModes();
+        if (supportedFocusModes != null && supportedFocusModes.contains(Camera.Parameters.FOCUS_MODE_AUTO)) {
+            mCamera.autoFocus(new Camera.AutoFocusCallback() {
+                @Override
+                public void onAutoFocus(boolean b, Camera camera) {
+                    // currently set to auto-focus on single touch
+                }
+            });
+        }
+    }
+
+    /** Determine the space between the first two fingers */
+    private float getFingerSpacing(MotionEvent event) {
+        // ...
+        float x = event.getX(0) - event.getX(1);
+        float y = event.getY(0) - event.getY(1);
+        return (float)Math.sqrt(x * x + y * y);
     }
 
     @Override
